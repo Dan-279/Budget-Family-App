@@ -1,3 +1,3 @@
-# Budget Familial (Multi-utilisateur)
+# Budget Familial (auto-reload après import)
 
-Inclut sauvegarde locale, import/export .json, impression HTML, multi-utilisateur sans connexion.
+Inclut sauvegarde locale, import/export .json, impression HTML, et rechargement automatique.

@@ -10,44 +10,37 @@ st.set_page_config(page_title="Budget Familial - Multi-utilisateur", layout="cen
 
 st.title("📦 Budget Familial par Enveloppes")
 
-# JavaScript to sync session_state with browser localStorage
+# JavaScript for localStorage sync
 st.markdown("""
 <script>
 const key = "budget_familial_data";
-
 function loadLocalStorage() {
     const stored = localStorage.getItem(key);
     if (stored) {
         window.parent.postMessage({ type: "LOAD_DATA", data: stored }, "*");
     }
 }
-
 function saveLocalStorage(data) {
     localStorage.setItem(key, data);
 }
-
 window.addEventListener("message", (event) => {
     if (event.data.type === "SAVE_DATA") {
         saveLocalStorage(event.data.data);
     }
 });
-
 window.onload = loadLocalStorage;
 </script>
 """, unsafe_allow_html=True)
 
-# Placeholder for JS → Python bridge
+# Session state structure
 if "user_data" not in st.session_state:
     st.session_state["user_data"] = {}
-
-# Event receiver to load JS-saved data
-st.experimental_data_editor = lambda *args, **kwargs: None  # Placeholder
 
 # Username
 st.header("👤 Informations utilisateur")
 username = st.text_input("Votre nom ou pseudo", value=st.session_state["user_data"].get("username", ""))
 
-# Envelope setup
+# Envelopes
 default_envelopes = {
     "Loyer": 1100,
     "Courses alimentaires": 500,
@@ -57,13 +50,12 @@ default_envelopes = {
     "Épargne": 300,
     "Autres": 100
 }
-
 st.sidebar.header("🗂️ Paramètres des enveloppes")
 envelopes = {}
 for cat, val in default_envelopes.items():
     envelopes[cat] = st.sidebar.number_input(f"{cat}", min_value=0, value=val, step=10)
 
-# Income input
+# Income
 st.header("💰 Revenus")
 salaire1 = st.number_input("Salaire - Parent 1", min_value=0)
 salaire2 = st.number_input("Salaire - Parent 2", min_value=0)
@@ -90,7 +82,7 @@ with st.form("transaction_form"):
             "Description": t_description
         })
 
-# Display data
+# Display
 df = pd.DataFrame(st.session_state["user_data"]["transactions"])
 if not df.empty:
     df["Montant"] = pd.to_numeric(df["Montant"])
@@ -106,7 +98,7 @@ if not df.empty:
     st.markdown(f"**Dépenses totales :** {total_spent} €")
     st.markdown(f"**Épargne possible :** {'🔴' if epargne < 0 else '🟢'} {epargne} €")
 
-    # Printable recap
+    # HTML recap
     if st.button("🖨️ Voir un récapitulatif imprimable"):
         recap_html = f"""<html><head><title>Récapitulatif</title></head><body>
         <h1>Récapitulatif de {username}</h1>
@@ -121,7 +113,7 @@ if not df.empty:
         b64 = base64.b64encode(recap_html.encode()).decode()
         st.markdown(f'<a href="data:text/html;base64,{b64}" download="recapitulatif.html" target="_blank">📥 Télécharger en HTML</a>', unsafe_allow_html=True)
 
-# Export/import
+# Export/Import
 st.header("📤 Sauvegarder / Charger")
 export_data = {
     "username": username,
@@ -135,8 +127,9 @@ upload = st.file_uploader("📂 Importer un fichier .json", type=["json"])
 if upload:
     content = json.load(upload)
     st.session_state["user_data"] = content
-    st.experimental_rerun()
+    st.markdown("<script>setTimeout(() => window.location.reload(), 100);</script>", unsafe_allow_html=True)
+    st.success("Import réussi ! L'application va se recharger...")
 
-# Save to localStorage (send to JS)
+# Save user data to localStorage
 save_payload = json.dumps(st.session_state["user_data"])
 st.markdown(f"<script>window.parent.postMessage({{type: 'SAVE_DATA', data: `{save_payload}`}}, '*');</script>", unsafe_allow_html=True)
