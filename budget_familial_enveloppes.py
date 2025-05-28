@@ -131,42 +131,7 @@ if current_month not in st.session_state["user_data"]["history"]:
             st.markdown(f"**{d['Nom']}** – Total: {d['Montant total']} € – Remboursé ce mois: {d['Payé ce mois']} €")
 
     
-
 if st.button("🖨️ Voir un récapitulatif imprimable"):
-    # Build income section
-    income_sources = [("Salaire - Parent 1", salaire1), ("Salaire - Parent 2", salaire2),
-                      ("Revenus secondaires", revenu_sec), ("Aides", aides)]
-    income_html = "<h2>Revenus</h2><ul>" + "".join([f"<li>{html.escape(name)} : {amount} €</li>" for name, amount in income_sources]) + "</ul>"
-
-    # Build debt section
-    debt_html = "<h2>Dettes / Prêts</h2><ul>" + "".join(
-        [f"<li>{html.escape(d['Nom'])} – Total: {d['Montant total']} €, Remboursé ce mois: {d['Payé ce mois']} €</li>" for d in st.session_state["user_data"].get("debts", [])]
-    ) + "</ul>"
-
-    # Build transaction section
-    transactions_html = "<h2>Transactions</h2><table border='1'><tr><th>Date</th><th>Catégorie</th><th>Montant</th><th>Description</th><th>Utilisateur</th></tr>"
-    for t in st.session_state["user_data"]["transactions"]:
-        transactions_html += f"<tr><td>{html.escape(t['Date'])}</td><td>{html.escape(t['Catégorie'])}</td><td>{t['Montant']} €</td><td>{html.escape(t['Description'])}</td><td>{html.escape(username)}</td></tr>"
-    transactions_html += "</table>"
-
-    # Compose full HTML
-    recap_html = f"""<html><head><meta charset='utf-8'><title>Recap</title></head><body>
-    <h1>Recapitulatif de {html.escape(username)}</h1>
-    <p>Revenus totaux : {revenus_total} EUR</p>
-    <p>Dépenses totales : {total_spent} EUR</p>
-    <p>Epargne possible : {epargne} EUR</p>
-    <h2>Dépenses par catégorie :</h2>
-    <ul>
-    {"".join([f"<li>{html.escape(cat)}: {val} EUR</li>" for cat, val in summary.items()])}
-    </ul>
-    {income_html}
-    {debt_html}
-    {transactions_html}
-    </body></html>"""
-
-    b64 = base64.b64encode(recap_html.encode()).decode()
-    st.markdown(f'<a href="data:text/html;base64,{b64}" download="recapitulatif.html" target="_blank">📥 Télécharger en HTML</a>', unsafe_allow_html=True)
-
     transactions_html = "<h2>Transactions</h2><table border='1'><tr><th>Date</th><th>Catégorie</th><th>Montant</th><th>Description</th><th>Utilisateur</th></tr>"
     for t in st.session_state["user_data"]["transactions"]:
         transactions_html += f"<tr><td>{html.escape(t['Date'])}</td><td>{html.escape(t['Catégorie'])}</td><td>{t['Montant']} €</td><td>{html.escape(t['Description'])}</td><td>{html.escape(username)}</td></tr>"
@@ -188,7 +153,37 @@ if st.button("🖨️ Voir un récapitulatif imprimable"):
     debt_html += "</ul>"
 
 
-        recap_html = f"""<html><head><meta charset='utf-8'><title>Recap</title></head><body>
+        
+    # Build income section
+    income_sources = [("Salaire - Parent 1", salaire1), ("Salaire - Parent 2", salaire2),
+                      ("Revenus secondaires", revenu_sec), ("Aides", aides)]
+    income_html = "<h2>Revenus</h2><ul>" + "".join([f"<li>{html.escape(name)} : {amount} €</li>" for name, amount in income_sources]) + "</ul>"
+
+    # Build debt section
+    debt_html = "<h2>Dettes / Prêts</h2><ul>" + "".join(
+        [f"<li>{html.escape(d['Nom'])} – Total: {d['Montant total']} €, Remboursé ce mois: {d['Payé ce mois']} €</li>" for d in st.session_state["user_data"].get("debts", [])]
+    ) + "</ul>"
+
+    # Build transaction section
+    transactions_html = "<h2>Transactions</h2><table border='1'><tr><th>Date</th><th>Catégorie</th><th>Montant</th><th>Description</th><th>Utilisateur</th></tr>"
+    for t in st.session_state["user_data"]["transactions"]:
+        transactions_html += f"<tr><td>{html.escape(t['Date'])}</td><td>{html.escape(t['Catégorie'])}</td><td>{t['Montant']} €</td><td>{html.escape(t['Description'])}</td><td>{html.escape(username)}</td></tr>"
+    transactions_html += "</table>"
+
+    recap_html = f"""<html><head><meta charset='utf-8'><title>Recap</title></head><body>
+    <h1>Recapitulatif de {html.escape(username)}</h1>
+    <p>Revenus totaux : {revenus_total} EUR</p>
+    <p>Dépenses totales : {total_spent} EUR</p>
+    <p>Epargne possible : {epargne} EUR</p>
+    <h2>Dépenses par catégorie :</h2>
+    <ul>
+    {"".join([f"<li>{html.escape(cat)}: {val} EUR</li>" for cat, val in summary.items()])}
+    </ul>
+    {income_html}
+    {debt_html}
+    {transactions_html}
+    </body></html>"""
+
         <h1>Recapitulatif de {html.escape(username)}</h1>
         <p>Revenus totaux : {revenus_total} EUR</p>
         <p>Dépenses totales : {total_spent} EUR</p>
