@@ -285,7 +285,16 @@ upload = st.file_uploader("📂 Importer un fichier .json", type=["json"])
 if st.button("🔄 Rafraîchir manuellement"):
     st.experimental_rerun()
 
+
 if upload:
+    content = json.load(upload)
+    if "envelopes" in content and "Remboursement dettes" not in content["envelopes"]:
+        content["envelopes"]["Remboursement dettes"] = 300
+    st.session_state["user_data"] = content
+    st.success("Import réussi ! Cliquez ci-dessous pour actualiser.")
+    if st.button("🔄 Rafraîchir maintenant"):
+        st.experimental_rerun()
+
 
     content = json.load(upload)
     st.session_state["user_data"] = content
