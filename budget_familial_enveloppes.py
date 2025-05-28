@@ -20,7 +20,22 @@ if st.button("🔄 Rafraîchir maintenant"):
 current_month = datetime.now().strftime("%Y-%m")
 
 # Safe initialization
+
 if "user_data" not in st.session_state:
+    st.session_state["user_data"] = {
+        "transactions": [],
+        "username": "",
+        "history": {},
+        "debts": [],
+        "envelopes": {}
+    }
+
+# Ensure "Remboursement dettes" is always in the envelopes
+if "envelopes" not in st.session_state["user_data"]:
+    st.session_state["user_data"]["envelopes"] = {}
+if "Remboursement dettes" not in st.session_state["user_data"]["envelopes"]:
+    st.session_state["user_data"]["envelopes"]["Remboursement dettes"] = 300
+
     st.session_state["user_data"] = {
         "transactions": [],
         "username": "",
