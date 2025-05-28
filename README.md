@@ -1,3 +1,3 @@
-# Budget Familial (auto-reload après import)
+# Budget Familial (auto-reload + correctif)
 
-Inclut sauvegarde locale, import/export .json, impression HTML, et rechargement automatique.
+Corrige l'erreur de ligne 138, inclut rechargement auto, sauvegarde locale, export .json et impression HTML.

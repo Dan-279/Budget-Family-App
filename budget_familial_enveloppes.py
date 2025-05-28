@@ -38,7 +38,7 @@ if "user_data" not in st.session_state:
 
 # Username
 st.header("👤 Informations utilisateur")
-username = st.text_input("Votre nom ou pseudo", value=st.session_state["user_data"].get("username", ""))
+username = st.text_input("Votre nom ou pseudo", value=st.session_state["user_data"].get("username", "") if "user_data" in st.session_state else "")
 
 # Envelopes
 default_envelopes = {
