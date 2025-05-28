@@ -120,21 +120,13 @@ if st.session_state["transactions"]:
     if st.button("📄 Générer le fichier"):
         if export_type == "Résumé texte (.txt)":
             buffer = StringIO()
-            buffer.write(f"RÉCAPITULATIF - {selected_month.upper()}
-
-")
-            buffer.write(f"Revenus totaux : {revenus_total:.2f} €
-")
-            buffer.write(f"Dépenses totales : {total_depenses:.2f} €
-")
-            buffer.write(f"Épargne possible : {economie:.2f} €
-
-")
-            buffer.write("Dépenses par catégorie :
-")
+            buffer.write(f"RÉCAPITULATIF - {selected_month.upper()}\n\n")
+            buffer.write(f"Revenus totaux : {revenus_total:.2f} €\n")
+            buffer.write(f"Dépenses totales : {total_depenses:.2f} €\n")
+            buffer.write(f"Épargne possible : {economie:.2f} €\n\n")
+            buffer.write("Dépenses par catégorie :\n")
             for cat, amt in summary.items():
-                buffer.write(f"- {cat} : {amt:.2f} €
-")
+                buffer.write(f"- {cat} : {amt:.2f} €\n")
             st.download_button("📥 Télécharger le résumé (.txt)", buffer.getvalue(), file_name="recapitulatif.txt")
 
         elif export_type == "CSV complet (.csv)":
