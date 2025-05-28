@@ -34,7 +34,10 @@ username = st.text_input("Votre nom ou pseudo", value=st.session_state["user_dat
 st.session_state["user_data"]["username"] = username
 
 # Envelope setup
+
 default_envelopes = {
+    "Remboursement dettes": 300,
+
     "Loyer": 1100,
     "Remboursement dettes": 300,
     "Courses alimentaires": 500,
