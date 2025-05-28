@@ -158,7 +158,12 @@ st.download_button("💾 Exporter (.json)", export_json, file_name="budget_data.
 
 upload = st.file_uploader("📂 Importer un fichier .json", type=["json"])
 
+
+if st.button("🔄 Rafraîchir manuellement"):
+    st.experimental_rerun()
+
 if upload:
+
     content = json.load(upload)
     st.session_state["user_data"] = content
     st.success("Import réussi ! Cliquez ci-dessous pour actualiser.")
