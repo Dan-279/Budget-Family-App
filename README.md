@@ -1,3 +1,3 @@
-# Budget Familial App - Streamlit Cloud Ready
+# Budget Familial (Multi-utilisateur)
 
-Inclut suivi mensuel, sauvegarde, graphique, et export .txt/.csv
+Inclut sauvegarde locale, import/export .json, impression HTML, multi-utilisateur sans connexion.
