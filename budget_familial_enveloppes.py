@@ -157,7 +157,14 @@ export_json = json.dumps(export_data, indent=2)
 st.download_button("💾 Exporter (.json)", export_json, file_name="budget_data.json")
 
 upload = st.file_uploader("📂 Importer un fichier .json", type=["json"])
+
 if upload:
+    content = json.load(upload)
+    st.session_state["user_data"] = content
+    st.success("Import réussi ! Cliquez ci-dessous pour actualiser.")
+    if st.button("🔄 Rafraîchir maintenant"):
+        st.experimental_rerun()
+
     content = json.load(upload)
     st.session_state["user_data"] = content
     st.success("Import réussi ! Rechargez la page si besoin.")
