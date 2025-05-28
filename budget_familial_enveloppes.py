@@ -129,5 +129,5 @@ if upload:
     st.success("Import réussi ! L'application va se recharger...")
 
 # Sync to browser localStorage
-save_payload = json.dumps(st.session_state["user_data"])
-st.markdown(f"<script>window.parent.postMessage({{type: 'SAVE_DATA', data: `{save_payload}`}}, '*');</script>", unsafe_allow_html=True)
+import html\nsave_payload = html.escape(json.dumps(st.session_state["user_data"]))
+st.markdown(f"<script>window.parent.postMessage({{type: 'SAVE_DATA', data: '{save_payload}'}}, '*');</script>", unsafe_allow_html=True)
