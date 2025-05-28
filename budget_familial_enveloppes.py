@@ -11,6 +11,12 @@ st.set_page_config(page_title="Budget Familial - Multi-utilisateur", layout="cen
 
 st.title("📦 Budget Familial par Enveloppes")
 
+st.markdown("### 🔁 **Recharger l'interface manuellement**")
+st.markdown("*Utilisez ce bouton si vos données ne s’affichent pas immédiatement après un import.*")
+if st.button("🔄 Rafraîchir maintenant"):
+    st.experimental_rerun()
+
+
 current_month = datetime.now().strftime("%Y-%m")
 
 # Safe initialization
@@ -124,7 +130,29 @@ if current_month not in st.session_state["user_data"]["history"]:
         for d in st.session_state["user_data"]["debts"]:
             st.markdown(f"**{d['Nom']}** – Total: {d['Montant total']} € – Remboursé ce mois: {d['Payé ce mois']} €")
 
-    if st.button("🖨️ Voir un récapitulatif imprimable"):
+    
+if st.button("🖨️ Voir un récapitulatif imprimable"):
+    transactions_html = "<h2>Transactions</h2><table border='1'><tr><th>Date</th><th>Catégorie</th><th>Montant</th><th>Description</th><th>Utilisateur</th></tr>"
+    for t in st.session_state["user_data"]["transactions"]:
+        transactions_html += f"<tr><td>{html.escape(t['Date'])}</td><td>{html.escape(t['Catégorie'])}</td><td>{t['Montant']} €</td><td>{html.escape(t['Description'])}</td><td>{html.escape(username)}</td></tr>"
+    
+    transactions_html += "</table>"
+
+    # Income section
+    income_html = "<h2>Revenus</h2><ul>"
+    income_sources = [("Salaire - Parent 1", salaire1), ("Salaire - Parent 2", salaire2), 
+                      ("Revenus secondaires", revenu_sec), ("Aides", aides)]
+    for name, amount in income_sources:
+        income_html += f"<li>{html.escape(name)} : {amount} €</li>"
+    income_html += "</ul>"
+
+    # Debt section
+    debt_html = "<h2>Dettes / Prêts</h2><ul>"
+    for d in st.session_state["user_data"].get("debts", []):
+        debt_html += f"<li>{html.escape(d['Nom'])} – Total: {d['Montant total']} €, Remboursé ce mois: {d['Payé ce mois']} €</li>"
+    debt_html += "</ul>"
+
+
         recap_html = f"""<html><head><meta charset='utf-8'><title>Recap</title></head><body>
         <h1>Recapitulatif de {html.escape(username)}</h1>
         <p>Revenus totaux : {revenus_total} EUR</p>
