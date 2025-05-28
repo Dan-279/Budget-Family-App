@@ -94,7 +94,11 @@ if not df.empty:
     epargne = revenus_total - total_spent
 
     # Log history
-    if current_month not in st.session_state["user_data"]["history"]:
+    
+if "history" not in st.session_state["user_data"]:
+    st.session_state["user_data"]["history"] = {}
+if current_month not in st.session_state["user_data"]["history"]:
+
         st.session_state["user_data"]["history"][current_month] = {
             "revenus": revenus_total,
             "dépenses": float(total_spent),
