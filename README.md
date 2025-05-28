@@ -1,21 +1,20 @@
 
 # 💸 Budget Familial par Enveloppes
 
-Cette application Streamlit permet à une famille de gérer son budget mensuel facilement, sans besoin d'inscription ou de connexion.
+Application Streamlit pour gérer facilement un budget familial mensuel avec historique d’épargne et suivi des dettes.
 
 ## 🚀 Fonctionnalités
 
 - Multi-utilisateur sans compte (via nom/pseudo)
-- Sauvegarde automatique dans le navigateur (localStorage)
-- Import/export de données .json
-- Visualisation des dépenses par catégorie
-- Impression ou téléchargement d’un résumé HTML
-- Rechargement automatique après import
+- Visualisation des dépenses et de l’épargne sous forme de graphique
+- Historique mensuel d’épargne automatique
+- Canal dédié aux dettes / prêts
+- Export HTML et sauvegarde JSON
 
 ## 🛠️ Installation locale
 
 ```bash
-pip install streamlit pandas
+pip install streamlit pandas matplotlib
 streamlit run budget_familial_enveloppes.py
 ```
 
@@ -26,10 +25,6 @@ streamlit run budget_familial_enveloppes.py
    - `budget_familial_enveloppes.py`
    - `requirements.txt`
    - `README.md`
-3. Rendez-vous sur https://streamlit.io/cloud
-4. Connectez votre compte GitHub
-5. Cliquez sur “New app” → Sélectionnez le dépôt → Déployez 🚀
+3. Déployez sur https://streamlit.io/cloud
 
----
-
-Développé pour un usage familial simple, confidentiel, et sans serveur 👨‍👩‍👧‍👦
+Développé pour un usage familial simple, confidentiel et visuel 👨‍👩‍👧‍👦

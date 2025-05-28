@@ -1,41 +1,26 @@
 
 import streamlit as st
 import pandas as pd
-from datetime import date
-from io import StringIO
+from datetime import date, datetime
 import json
 import base64
 import html
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Budget Familial - Multi-utilisateur", layout="centered")
 
 st.title("📦 Budget Familial par Enveloppes")
 
-# JavaScript for localStorage sync
-st.markdown("""
-<script>
-const key = "budget_familial_data";
-function loadLocalStorage() {
-    const stored = localStorage.getItem(key);
-    if (stored) {
-        window.parent.postMessage({ type: "LOAD_DATA", data: stored }, "*");
-    }
-}
-function saveLocalStorage(data) {
-    localStorage.setItem(key, data);
-}
-window.addEventListener("message", (event) => {
-    if (event.data.type === "SAVE_DATA") {
-        saveLocalStorage(event.data.data);
-    }
-});
-window.onload = loadLocalStorage;
-</script>
-""", unsafe_allow_html=True)
+current_month = datetime.now().strftime("%Y-%m")
 
 # Safe initialization
 if "user_data" not in st.session_state:
-    st.session_state["user_data"] = {"transactions": [], "username": ""}
+    st.session_state["user_data"] = {
+        "transactions": [],
+        "username": "",
+        "history": {},
+        "debts": []
+    }
 
 # Username input
 st.header("👤 Informations utilisateur")
@@ -81,21 +66,59 @@ with st.form("transaction_form"):
             "Description": t_description
         })
 
+# Add debt entry
+st.header("💳 Dettes / Prêts")
+with st.expander("Ajouter une dette ou un prêt"):
+    with st.form("debt_form"):
+        debt_name = st.text_input("Nom de la dette")
+        debt_total = st.number_input("Montant total de la dette", min_value=0)
+        debt_paid = st.number_input("Montant remboursé ce mois-ci", min_value=0)
+        debt_submit = st.form_submit_button("Ajouter cette dette")
+        if debt_submit and debt_name:
+            st.session_state["user_data"]["debts"].append({
+                "Nom": debt_name,
+                "Montant total": debt_total,
+                "Payé ce mois": debt_paid,
+                "Mois": current_month
+            })
+
 # Display transactions
 df = pd.DataFrame(st.session_state["user_data"]["transactions"])
 if not df.empty:
     df["Montant"] = pd.to_numeric(df["Montant"])
     st.dataframe(df)
 
-    # Summary
+    # Summary with pie chart
     summary = df.groupby("Catégorie")["Montant"].sum().reindex(envelopes.keys(), fill_value=0)
     total_spent = summary.sum()
     epargne = revenus_total - total_spent
+
+    # Log history
+    if current_month not in st.session_state["user_data"]["history"]:
+        st.session_state["user_data"]["history"][current_month] = {
+            "revenus": revenus_total,
+            "dépenses": float(total_spent),
+            "épargne": float(epargne)
+        }
 
     st.subheader("📊 Récapitulatif")
     st.markdown(f"Revenus totaux : {revenus_total} EUR")
     st.markdown(f"Dépenses totales : {total_spent} EUR")
     st.markdown(f"Épargne possible : {epargne} EUR")
+
+    # Pie chart
+    fig, ax = plt.subplots()
+    labels = list(summary.index) + ["Épargne"]
+    sizes = list(summary.values) + [max(epargne, 0)]
+    ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
+    ax.axis('equal')
+    st.pyplot(fig)
+
+    # Debt display
+    if st.session_state["user_data"]["debts"]:
+        st.subheader("💳 Dettes en cours")
+        for d in st.session_state["user_data"]["debts"]:
+            st.markdown(f"**{d['Nom']}** – Total: {d['Montant total']} € – Remboursé ce mois: {d['Payé ce mois']} €")
 
     if st.button("🖨️ Voir un récapitulatif imprimable"):
         recap_html = f"""<html><head><meta charset='utf-8'><title>Recap</title></head><body>
@@ -111,12 +134,20 @@ if not df.empty:
         b64 = base64.b64encode(recap_html.encode()).decode()
         st.markdown(f'<a href="data:text/html;base64,{b64}" download="recapitulatif.html" target="_blank">📥 Télécharger en HTML</a>', unsafe_allow_html=True)
 
+# Savings history chart
+st.header("📈 Historique de l'épargne")
+if st.session_state["user_data"]["history"]:
+    hist_df = pd.DataFrame.from_dict(st.session_state["user_data"]["history"], orient="index")
+    st.line_chart(hist_df["épargne"])
+
 # Export/Import
 st.header("📤 Sauvegarder / Charger")
 export_data = {
     "username": username,
     "revenus": [salaire1, salaire2, revenu_sec, aides],
-    "transactions": st.session_state["user_data"]["transactions"]
+    "transactions": st.session_state["user_data"]["transactions"],
+    "history": st.session_state["user_data"]["history"],
+    "debts": st.session_state["user_data"]["debts"]
 }
 export_json = json.dumps(export_data, indent=2)
 st.download_button("💾 Exporter (.json)", export_json, file_name="budget_data.json")
@@ -125,9 +156,4 @@ upload = st.file_uploader("📂 Importer un fichier .json", type=["json"])
 if upload:
     content = json.load(upload)
     st.session_state["user_data"] = content
-    st.markdown("<script>setTimeout(() => window.location.reload(), 100);</script>", unsafe_allow_html=True)
-    st.success("Import réussi ! L'application va se recharger...")
-
-# Sync to browser localStorage
-import html\nsave_payload = html.escape(json.dumps(st.session_state["user_data"]))
-st.markdown(f"<script>window.parent.postMessage({{type: 'SAVE_DATA', data: '{save_payload}'}}, '*');</script>", unsafe_allow_html=True)
+    st.success("Import réussi ! Rechargez la page si besoin.")
