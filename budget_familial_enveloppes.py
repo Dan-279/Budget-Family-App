@@ -50,7 +50,9 @@ st.session_state["user_data"]["username"] = username
 
 # Envelope setup
 
+
 default_envelopes = {
+    "Remboursement dettes": 300,
     "Remboursement dettes": 300,
 
     "Loyer": 1100,
