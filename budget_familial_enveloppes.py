@@ -5,6 +5,7 @@ from datetime import date
 from io import StringIO
 import json
 import base64
+import html
 
 st.set_page_config(page_title="Budget Familial - Multi-utilisateur", layout="centered")
 
@@ -32,15 +33,16 @@ window.onload = loadLocalStorage;
 </script>
 """, unsafe_allow_html=True)
 
-# Session state structure
+# Safe initialization
 if "user_data" not in st.session_state:
-    st.session_state["user_data"] = {}
+    st.session_state["user_data"] = {"transactions": [], "username": ""}
 
-# Username
+# Username input
 st.header("👤 Informations utilisateur")
-username = st.text_input("Votre nom ou pseudo", value=st.session_state["user_data"].get("username", "") if "user_data" in st.session_state else "")
+username = st.text_input("Votre nom ou pseudo", value=st.session_state["user_data"].get("username", ""))
+st.session_state["user_data"]["username"] = username
 
-# Envelopes
+# Envelope setup
 default_envelopes = {
     "Loyer": 1100,
     "Courses alimentaires": 500,
@@ -55,7 +57,7 @@ envelopes = {}
 for cat, val in default_envelopes.items():
     envelopes[cat] = st.sidebar.number_input(f"{cat}", min_value=0, value=val, step=10)
 
-# Income
+# Income input
 st.header("💰 Revenus")
 salaire1 = st.number_input("Salaire - Parent 1", min_value=0)
 salaire2 = st.number_input("Salaire - Parent 2", min_value=0)
@@ -63,10 +65,7 @@ revenu_sec = st.number_input("Revenus secondaires", min_value=0)
 aides = st.number_input("Allocations / Aides", min_value=0)
 revenus_total = salaire1 + salaire2 + revenu_sec + aides
 
-# Transactions
-if "transactions" not in st.session_state["user_data"]:
-    st.session_state["user_data"]["transactions"] = []
-
+# Add transaction
 st.header("➕ Ajouter une transaction")
 with st.form("transaction_form"):
     t_date = st.date_input("Date", value=date.today())
@@ -82,32 +81,31 @@ with st.form("transaction_form"):
             "Description": t_description
         })
 
-# Display
+# Display transactions
 df = pd.DataFrame(st.session_state["user_data"]["transactions"])
 if not df.empty:
     df["Montant"] = pd.to_numeric(df["Montant"])
     st.dataframe(df)
 
-    # Résumé
+    # Summary
     summary = df.groupby("Catégorie")["Montant"].sum().reindex(envelopes.keys(), fill_value=0)
     total_spent = summary.sum()
     epargne = revenus_total - total_spent
 
     st.subheader("📊 Récapitulatif")
-    st.markdown(f"**Revenus totaux :** {revenus_total} €")
-    st.markdown(f"**Dépenses totales :** {total_spent} €")
-    st.markdown(f"**Épargne possible :** {'🔴' if epargne < 0 else '🟢'} {epargne} €")
+    st.markdown(f"Revenus totaux : {revenus_total} EUR")
+    st.markdown(f"Dépenses totales : {total_spent} EUR")
+    st.markdown(f"Épargne possible : {epargne} EUR")
 
-    # HTML recap
     if st.button("🖨️ Voir un récapitulatif imprimable"):
-        recap_html = f"""<html><head><title>Récapitulatif</title></head><body>
-        <h1>Récapitulatif de {username}</h1>
-        <p><strong>Revenus totaux :</strong> {revenus_total} €</p>
-        <p><strong>Dépenses totales :</strong> {total_spent} €</p>
-        <p><strong>Épargne possible :</strong> {epargne} €</p>
+        recap_html = f"""<html><head><meta charset='utf-8'><title>Recap</title></head><body>
+        <h1>Recapitulatif de {html.escape(username)}</h1>
+        <p>Revenus totaux : {revenus_total} EUR</p>
+        <p>Dépenses totales : {total_spent} EUR</p>
+        <p>Epargne possible : {epargne} EUR</p>
         <h2>Dépenses par catégorie :</h2>
         <ul>
-        {"".join([f"<li>{cat}: {val} €</li>" for cat, val in summary.items()])}
+        {"".join([f"<li>{html.escape(cat)}: {val} EUR</li>" for cat, val in summary.items()])}
         </ul>
         </body></html>"""
         b64 = base64.b64encode(recap_html.encode()).decode()
@@ -130,6 +128,6 @@ if upload:
     st.markdown("<script>setTimeout(() => window.location.reload(), 100);</script>", unsafe_allow_html=True)
     st.success("Import réussi ! L'application va se recharger...")
 
-# Save user data to localStorage
+# Sync to browser localStorage
 save_payload = json.dumps(st.session_state["user_data"])
 st.markdown(f"<script>window.parent.postMessage({{type: 'SAVE_DATA', data: `{save_payload}`}}, '*');</script>", unsafe_allow_html=True)
