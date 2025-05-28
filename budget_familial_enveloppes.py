@@ -36,6 +36,7 @@ st.session_state["user_data"]["username"] = username
 # Envelope setup
 default_envelopes = {
     "Loyer": 1100,
+    "Remboursement dettes": 300,
     "Courses alimentaires": 500,
     "Transport": 150,
     "Loisirs": 200,
@@ -64,7 +65,51 @@ with st.form("transaction_form"):
     t_amount = st.number_input("Montant", min_value=0.0)
     t_description = st.text_input("Description")
     submit = st.form_submit_button("Ajouter")
-    if submit:
+    
+if submit:
+    transaction = {
+        "Date": str(t_date),
+        "Catégorie": t_category,
+        "Montant": t_amount,
+        "Description": t_description
+    }
+    st.session_state["user_data"]["transactions"].append(transaction)
+
+    
+# If "Remboursement dettes" is selected, prompt for debt selection
+if t_category == "Remboursement dettes":
+    debt_names = [d["Nom"] for d in st.session_state["user_data"].get("debts", [])]
+    if debt_names:
+        selected_debt_name = st.selectbox("Sélectionnez la dette à rembourser", debt_names, key="select_debt")
+    else:
+        st.warning("Aucune dette disponible pour le remboursement.")
+
+
+    if t_category == "Remboursement dettes" and 'selected_debt_name' in locals():
+        # Apply to specifically selected debt
+        debts = st.session_state["user_data"].get("debts", [])
+        target_debt = next((d for d in debts if d["Nom"] == selected_debt_name), None)
+        if target_debt:
+            target_debt["Payé ce mois"] = target_debt.get("Payé ce mois", 0) + t_amount
+            st.success(f"Le montant a été appliqué à la dette : {selected_debt_name}")
+        else:
+            st.warning("Dette sélectionnée introuvable.")
+    elif t_category == "Remboursement dettes":
+        st.warning("Aucune dette sélectionnée. Le montant n'a pas été appliqué.")
+
+        debts = st.session_state["user_data"].get("debts", [])
+        if debts:
+            # Find debt with max remaining total
+            debts_with_remaining = [d for d in debts if d.get("Montant total", 0) > 0]
+            if debts_with_remaining:
+                target_debt = max(debts_with_remaining, key=lambda d: d["Montant total"] - d.get("Payé ce mois", 0))
+                target_debt["Payé ce mois"] = target_debt.get("Payé ce mois", 0) + t_amount
+                st.success(f"Le montant a été automatiquement appliqué à : {target_debt['Nom']}")
+            else:
+                st.warning("Aucune dette avec un montant restant.")
+        else:
+            st.warning("Aucune dette enregistrée à rembourser.")
+
         st.session_state["user_data"]["transactions"].append({
             "Date": str(t_date),
             "Catégorie": t_category,
