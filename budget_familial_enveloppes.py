@@ -11,7 +11,11 @@ st.set_page_config(page_title="Budget Familial - Multi-utilisateur", layout="cen
 
 st.title("📦 Budget Familial par Enveloppes")
 
-st.markdown("### 🔁 **Recharger l'interface manuellement**")
+
+st.divider()
+st.markdown("### 🔄 Recharger l’interface")
+st.markdown("*Utilisez ce bouton si vos données ne s’affichent pas immédiatement après un import.*")
+
 st.markdown("*Utilisez ce bouton si vos données ne s’affichent pas immédiatement après un import.*")
 if st.button("🔄 Rafraîchir maintenant"):
     st.experimental_rerun()
